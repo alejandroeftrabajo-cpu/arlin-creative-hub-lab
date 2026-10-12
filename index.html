@@ -1,16 +1,16 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ARLIN — Constelación / Laboratorio 004</title>
+<title>ARLIN — Constelación / Laboratorio 005</title>
 <style>
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#101312;color:#eee9e2;font-family:Arial,Helvetica,sans-serif}
 main{min-height:100svh;position:relative;overflow:hidden}canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:pan-y;display:block}
 .overlay{position:relative;pointer-events:none;min-height:100svh;display:flex;flex-direction:column;padding:clamp(22px,4vw,58px)}
-header{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid #ffffff32;padding-bottom:20px}
+header{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid #ffffff32;padding-bottom:20px}
 .logo{font-family:Georgia,serif;font-size:clamp(24px,3vw,39px);letter-spacing:.28em}small,.eyebrow{font-size:10px;letter-spacing:.2em;color:#bcb7b0;text-transform:uppercase}
-.hero{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:390px;pointer-events:none}
+.hero{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:355px;pointer-events:none;z-index:2}
 h1{font:normal clamp(42px,5vw,80px)/.99 Georgia,serif;letter-spacing:-.055em;margin:18px 0 24px}h1 em{color:#c5a99d;font-weight:normal}
 p{color:#c3c0b9;line-height:1.65;font-size:14px;max-width:315px}
-.bottom{display:flex;justify-content:space-between;align-items:end;gap:18px;border-top:1px solid #ffffff32;padding-top:18px;pointer-events:auto}
+.bottom{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:end;gap:18px;border-top:1px solid #ffffff32;padding-top:18px;pointer-events:auto}
 .controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap}button{font:inherit;cursor:pointer;background:#eee9e2;color:#171918;border:0;border-radius:50px;padding:10px 16px}button:focus-visible,a:focus-visible{outline:2px solid #fff;outline-offset:4px}
 input{accent-color:#c5a99d}label{font-size:12px;color:#d3cec7}#status{font-size:11px;color:#c5a99d}
 #fallback{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:24px;color:#eee9e2;background:radial-gradient(ellipse at 65% 48%,#4c4a43,#101312 60%)}
@@ -18,13 +18,13 @@ input{accent-color:#c5a99d}label{font-size:12px;color:#d3cec7}#status{font-size:
 aside{background:#191c1b;border-top:1px solid #ffffff22;padding:26px clamp(22px,4vw,58px);display:flex;gap:30px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .links{display:flex;gap:12px;flex-wrap:wrap}.links button{background:transparent;color:#e8e0d8;border:1px solid #ffffff50}
 #detail{font-size:13px;color:#c5a99d;min-height:20px}
-@media(max-width:750px){.hero{justify-content:flex-start;margin-top:8vh;max-width:260px}h1{font-size:44px}main{min-height:780px}.overlay{min-height:780px}.bottom{align-items:start;flex-direction:column}small{font-size:9px}header small{max-width:145px;text-align:right}}
+@media(max-width:750px){.hero{justify-content:flex-start;margin-top:8vh;max-width:240px}h1{font-size:44px}main{min-height:780px}.overlay{min-height:780px}.bottom{align-items:start;flex-direction:column}small{font-size:9px}header small{max-width:145px;text-align:right}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style></head>
 <body><main id="stage"><canvas id="scene" aria-label="Escultura digital tridimensional abstracta con cuatro fragmentos suspendidos"></canvas>
 <div id="fallback"><div><strong>Constelación de fragmentos</strong>La representación tridimensional no está disponible en este navegador.<p>Utiliza los accesos accesibles situados debajo.</p></div></div>
-<div class="overlay"><header><div class="logo">ARLIN</div><small>BEGOÑA ARLIN · LABORATORIO DIGITAL / 004</small></header>
-<div class="hero"><div class="eyebrow">Experiencia experimental</div><h1>Constelación<br><em>de fragmentos.</em></h1><p>Cuatro cuerpos suspendidos. Una investigación sobre materia, vacío y movimiento.</p></div>
+<div class="overlay"><header><div class="logo">ARLIN</div><small>BEGOÑA ARLIN · LABORATORIO DIGITAL / 005</small></header>
+<div class="hero"><div class="eyebrow">Experiencia experimental</div><h1>Constelación<br><em>de fragmentos.</em></h1><p>Materia mineral suspendida. Cuatro cuerpos, distintas escalas y un mismo espacio.</p></div>
 <div class="bottom"><div><small>DESLIZA PARA CAMBIAR LA PERSPECTIVA · EXPLORA LOS FRAGMENTOS</small><div id="status" role="status" aria-live="polite">Iniciando escultura…</div></div>
 <div class="controls"><button id="motion" type="button">Pausar movimiento</button><label>Intensidad <input id="intensity" type="range" min="0" max="100" value="55"></label></div></div>
 </div></main>
@@ -41,49 +41,58 @@ const vert=`attribute vec2 position;void main(){gl_Position=vec4(position,0.,1.)
 const frag=`
 precision highp float;
 uniform vec2 resolution;uniform float time;uniform float motion;uniform vec2 rotation;
-float hash(vec3 p){p=fract(p*.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z);}
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
-vec3 centers(int i){if(i==0)return vec3(-1.0,.55,0.);if(i==1)return vec3(.85,.83,-.25);if(i==2)return vec3(-.55,-.85,.3);return vec3(1.04,-.72,.15);}
+// Smooth low-frequency ellipsoidal deformation: no angular pinches or radial creases.
 float body(vec3 p,int i){
-vec3 c=centers(i);c.y+=.07*sin(time*.4+float(i)*1.7)*motion;
-vec3 q=p-c;q.xz=rot(time*(.1+.02*float(i))*motion+rotation.x)*q.xz;
-q.yz=rot(.35*sin(time*.17+float(i))*motion+rotation.y)*q.yz;
-float a=atan(q.y,q.x),b=atan(q.z,length(q.xy));
-float wave=.075*sin(5.*a+3.*b+float(i)*1.3+time*.35*motion)+.048*sin(8.*b-3.*a+time*.22*motion);
-float base=i==1?.78:(i==3?.53:.61);
-vec3 scale=i==1?vec3(.91,1.13,.72):i==2?vec3(.85,1.15,.8):vec3(1.,.88,.8);
-float ell=length(q/scale)-base-wave;
-float crease=.055*sin(3.*a+1.8*b+float(i)*2.)*sin(2.3*b-1.2*a);
-return (ell+crease)*min(min(scale.x,scale.y),scale.z);
+ vec3 c;
+ if(i==0)c=vec3(.63,.22,-.05);
+ else if(i==1)c=vec3(1.65,-.72,.23);
+ else if(i==2)c=vec3(-.15,-.95,-.25);
+ else c=vec3(1.85,.89,-.65);
+ c.y+=.045*sin(time*.34+float(i)*1.8)*motion;
+ vec3 q=p-c;
+ q.xz=rot(.23*sin(time*.23+float(i))*motion+rotation.x*.50)*q.xz;
+ q.yz=rot(.17*sin(time*.19+float(i)*1.5)*motion+rotation.y*.5)*q.yz;
+ vec3 scale;
+ if(i==0)scale=vec3(.91,.76,.62);
+ else if(i==1)scale=vec3(.48,.58,.40);
+ else if(i==2)scale=vec3(.56,.40,.43);
+ else scale=vec3(.38,.49,.32);
+ float d=length(q/scale);
+ vec3 dir=q/max(length(q),.001);
+ float phase=float(i)*2.41;
+ float ripple=.038*sin(3.0*dir.x+2.1*dir.y+phase+time*.19*motion)
+             +.026*sin(3.3*dir.z-2.0*dir.x+phase*.7-time*.16*motion)
+             +.014*sin(5.0*dir.y+dir.z*2.0+phase);
+ return (d-1.0-ripple)*min(min(scale.x,scale.y),scale.z);
 }
-vec2 map(vec3 p){float d=100.;float id=-1.;for(int i=0;i<4;i++){float v=body(p,i);if(v<d){d=v;id=float(i);}}return vec2(d,id);}
-vec3 normal(vec3 p){vec2 e=vec2(.003,0.);return normalize(vec3(map(p+e.xyy).x-map(p-e.xyy).x,map(p+e.yxy).x-map(p-e.yxy).x,map(p+e.yyx).x-map(p-e.yyx).x));}
-vec3 palette(float id){if(id<.5)return vec3(.69,.77,.71);if(id<1.5)return vec3(.78,.63,.56);if(id<2.5)return vec3(.68,.55,.60);return vec3(.77,.71,.57);}
+vec2 scene(vec3 p){float d=100.;float id=-1.;for(int i=0;i<4;i++){float v=body(p,i);if(v<d){d=v;id=float(i);}}return vec2(d,id);}
+vec3 normal(vec3 p){vec2 e=vec2(.004,0.);return normalize(vec3(scene(p+e.xyy).x-scene(p-e.xyy).x,scene(p+e.yxy).x-scene(p-e.yxy).x,scene(p+e.yyx).x-scene(p-e.yyx).x));}
+vec3 palette(float id){if(id<.5)return vec3(.76,.77,.69);if(id<1.5)return vec3(.71,.63,.58);if(id<2.5)return vec3(.63,.68,.68);return vec3(.75,.65,.64);}
 void main(){
-vec2 uv=(gl_FragCoord.xy-.5*resolution)/resolution.y;
-vec3 ro=vec3(0.,0.,6.1),rd=normalize(vec3(uv,-1.65));
-rd.xz=rot(rotation.x*.33)*rd.xz;rd.yz=rot(rotation.y*.25)*rd.yz;
-vec3 bg=mix(vec3(.055,.067,.064),vec3(.14,.15,.14),exp(-dot(uv-vec2(.25,.0),uv-vec2(.25,.0))*1.4));
-float t=0.;vec2 hit;bool found=false;
-for(int j=0;j<100;j++){vec3 p=ro+rd*t;hit=map(p);if(hit.x<.002){found=true;break;}t+=max(hit.x*.75,.012);if(t>12.)break;}
-vec3 col=bg;
-if(found){
-vec3 p=ro+rd*t,n=normal(p),v=normalize(ro-p);
-vec3 l1=normalize(vec3(-.55,.82,1.)),l2=normalize(vec3(.75,.2,-.35));
-float diff=max(dot(n,l1),0.);
-float rim=pow(1.-max(dot(n,v),0.),2.5);
-float spec=pow(max(dot(reflect(-l1,n),v),0.),48.);
-float spec2=pow(max(dot(reflect(-l2,n),v),0.),14.);
-vec3 base=palette(hit.y);
-float fres=pow(1.-max(dot(n,v),0.),3.);
-float striation=.5+.5*sin(15.*p.y+6.*p.z+3.*sin(p.x*4.));
-col=base*(.25+.78*diff)+vec3(1.,.94,.85)*spec*.75+vec3(.6,.72,.71)*spec2*.15;
-col+=base*.2*striation*pow(1.-diff,2.);
-col=mix(col,vec3(.92,.94,.88),fres*.46);
-col+=vec3(.65,.77,.75)*rim*.32;
-float fog=exp(-.025*t*t);col=mix(bg,col,fog);
-}
-col=pow(col,vec3(.91));gl_FragColor=vec4(col,1.);
+ vec2 uv=(gl_FragCoord.xy-.5*resolution)/resolution.y;
+ vec3 bg=mix(vec3(.048,.058,.056),vec3(.115,.126,.120),exp(-dot(uv-vec2(.35,.04),uv-vec2(.35,.04))*1.4));
+ vec3 ro=vec3(0.,0.,5.6),rd=normalize(vec3(uv,-1.45));
+ float t=0.;vec2 hit=vec2(0.);bool found=false;
+ for(int j=0;j<110;j++){vec3 p=ro+rd*t;hit=scene(p);if(hit.x<.002){found=true;break;}t+=max(hit.x*.67,.008);if(t>10.)break;}
+ vec3 col=bg;
+ if(found){
+  vec3 p=ro+rd*t,n=normal(p),v=normalize(ro-p);
+  vec3 key=normalize(vec3(-.6,.8,1.)),fill=normalize(vec3(.85,-.2,.6));
+  float diff=max(dot(n,key),0.);
+  float back=max(dot(n,fill),0.);
+  float fres=pow(1.-max(dot(n,v),0.),3.);
+  float softSpec=pow(max(dot(reflect(-key,n),v),0.),19.);
+  float fineSpec=pow(max(dot(reflect(-key,n),v),0.),74.);
+  vec3 base=palette(hit.y);
+  // Warm alabaster: broad milky highlights, subtle edge scattering, no plastic hard spots.
+  col=base*(.47+.49*diff+.13*back);
+  col+=vec3(1.,.94,.84)*softSpec*.22+vec3(1.)*fineSpec*.11;
+  col=mix(col,vec3(.89,.87,.78),fres*.27);
+  col+=base*fres*.12;
+  col=mix(bg,col,exp(-.011*t*t));
+ }
+ col=pow(col,vec3(.95));gl_FragColor=vec4(col,1.);
 }`;
 function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
 let program;try{program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vert));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,frag));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));}catch(e){fallback.style.display='flex';status.textContent='Error de shader: '+e.message;return;}
@@ -92,7 +101,7 @@ const pos=gl.getAttribLocation(program,'position');gl.enableVertexAttribArray(po
 const res=gl.getUniformLocation(program,'resolution'),tm=gl.getUniformLocation(program,'time'),mo=gl.getUniformLocation(program,'motion'),rt=gl.getUniformLocation(program,'rotation');
 let running=!matchMedia('(prefers-reduced-motion: reduce)').matches, intensity=.55, rx=0,ry=0,drag=false,px=0,py=0;
 const motionBtn=document.getElementById('motion');function sync(){motionBtn.textContent=running?'Pausar movimiento':'Activar movimiento';}
-if(!running)status.textContent='Movimiento reducido activado';else status.textContent='Escultura WebGL activa · cuatro fragmentos';
+if(!running)status.textContent='Movimiento reducido activado';else status.textContent='Escultura WebGL activa · geometría V0.5';
 sync();motionBtn.addEventListener('click',()=>{running=!running;sync();});
 document.getElementById('intensity').addEventListener('input',e=>intensity=+e.target.value/100);
 canvas.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;canvas.setPointerCapture(e.pointerId)});
